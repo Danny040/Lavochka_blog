@@ -1,7 +1,8 @@
-import React from "react";
+import React, { useContext } from "react";
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import axios from "axios";
+import { AuthContext } from "../../context/authContext.jsx";
 
 const LogIn = () => {
   const [inputs, setInputs] = useState({
@@ -9,6 +10,8 @@ const LogIn = () => {
     password: "",
   });
   const [error, setError] = useState(null);
+  const { login } = useContext(AuthContext);
+
   const navigate = useNavigate();
 
   const handleChange = (event) => {
@@ -21,11 +24,7 @@ const LogIn = () => {
   const handleSubmit = async (event) => {
     event.preventDefault();
     try {
-      await axios.post("http://localhost:8800/api/auth/login", inputs, {
-        headers: {
-          "Content-Type": "application/json",
-        },
-      });
+      await login(inputs);
       navigate("/");
     } catch (error) {
       setError(error.response.data);

@@ -1,8 +1,8 @@
 import { db } from "../db.js";
 import bcrypt from "bcryptjs";
+import jwt from "jsonwebtoken";
 
 export const register = (req, res) => {
-  console.log("From client to register");
   // check existing user
   const query_ = "SELECT * FROM users WHERE email = ? OR username = ?";
   db.query(query_, [req.body.email, req.body.username], (err, data) => {
@@ -36,7 +36,24 @@ export const login = (req, res) => {
     );
     if (!isPasswordCorrect)
       return res.status(400).json("Wrong username or password.");
+    // token is stored in cookie; jwtkey is a secret key and should be generated and stored in .env
+    const token = jwt.sign({ id: data[0].id }, "jwtkey"); // send a user info that identifies user, id
+    const { password, ...other } = data[0]; // excluding password - security
+    res
+      .cookie("access_token", token, {
+        httpOnly: true, // any script in the browser can't reach cookie directly and its used only when api request is made
+      })
+      .status(200)
+      .json(other);
   });
 };
 
-export const logout = (req, res) => {};
+export const logout = (req, res) => {
+  res
+    .clearCookie("access_token", {
+      sameSite: "none",
+      secure: true,
+    })
+    .status(200)
+    .json("User has been logged out.");
+};
