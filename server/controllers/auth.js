@@ -37,11 +37,12 @@ export const login = (req, res) => {
     if (!isPasswordCorrect)
       return res.status(400).json("Wrong username or password.");
     // token is stored in cookie; jwtkey is a secret key and should be generated and stored in .env
-    const token = jwt.sign({ id: data[0].id }, "jwtkey"); // send a user info that identifies user, id
+    const token = jwt.sign({ id: data[0].id_user }, "jwtkey"); // send a user info that identifies user, id
     const { password, ...other } = data[0]; // excluding password - security
     res
       .cookie("access_token", token, {
         httpOnly: true, // any script in the browser can't reach cookie directly and its used only when api request is made
+        sameSite: "none",
       })
       .status(200)
       .json(other);
